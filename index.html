@@ -25,6 +25,7 @@
     <button class="tab-btn active" data-view="saisie">Saisie du jour</button>
     <button class="tab-btn" data-view="historique">Historique</button>
     <button class="tab-btn" data-view="parametres">Paramètres</button>
+    <button class="tab-btn" data-view="apropos">À propos</button>
   </nav>
   <button id="installBtn" class="btn btn-ghost" hidden>Installer l'app</button>
 </header>
@@ -206,6 +207,35 @@
           <input type="file" id="importBackupInput" accept="application/json" hidden>
         </label>
       </div>
+    </div>
+  </section>
+
+  <!-- ===================== VUE A PROPOS ===================== -->
+  <section id="view-apropos" class="view">
+    <div class="card about-card">
+      <div class="about-header">
+        <img src="assets/logo-bpmg.png" alt="Banque Populaire Maroco Guinéenne" class="about-logo">
+      </div>
+      <h2>À propos de l'application</h2>
+      <p>
+        <strong>Situation de Caisse</strong> est une application de comptage et de clôture de
+        caisse journalière, multi-devises (GNF, EUR, USD), pensée pour remplacer le suivi Excel
+        des agences. Toutes les données restent stockées localement sur l'appareil.
+      </p>
+
+      <h2>Développeur</h2>
+      <div class="about-dev">
+        <div class="about-dev-name">Mohamed Kabinet Soumah</div>
+        <div class="about-dev-role">Technicien Support IT — BPMG, Conakry, Guinée</div>
+        <ul class="about-contacts">
+          <li><a href="mailto:mohamedkabinetsoumah@gmail.com">✉ mohamedkabinetsoumah@gmail.com</a></li>
+          <li><a href="tel:+224629364832">📞 +224 629 36 48 32</a></li>
+          <li><a href="https://www.linkedin.com/in/mohamed-kabinet-soumah-b19716281" target="_blank" rel="noopener">in LinkedIn</a></li>
+          <li><a href="https://mohamedkabinetsoumah-ops.github.io/" target="_blank" rel="noopener">🌐 Portfolio</a></li>
+        </ul>
+      </div>
+
+      <p class="about-version muted">Version 1.0 — Juillet 2026</p>
     </div>
   </section>
 
