@@ -23,16 +23,16 @@ const DEFAULT_SETTINGS = {
     EUR: {
       label: 'Euro',
       symbol: '€',
-      decimals: 2,
+      decimals: 0,
       wordName: { singular: 'Euro', plural: 'Euros' },
-      denominations: [200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01]
+      denominations: [200, 100, 50, 20, 10, 5, 2, 1]
     },
     USD: {
       label: 'Dollar US',
       symbol: '$',
-      decimals: 2,
+      decimals: 0,
       wordName: { singular: 'Dollar US', plural: 'Dollars US' },
-      denominations: [100, 50, 20, 10, 5, 1, 0.25, 0.1, 0.05, 0.01]
+      denominations: [100, 50, 20, 10, 5, 1]
     }
   }
 };
@@ -50,6 +50,13 @@ function loadSettings() {
     const merged = structuredClone(DEFAULT_SETTINGS);
     Object.assign(merged, parsed);
     merged.currencies = Object.assign({}, DEFAULT_SETTINGS.currencies, parsed.currencies || {});
+    // le nombre de decimales n'est pas modifiable par l'utilisateur : on force
+    // toujours la valeur du code, meme si une ancienne sauvegarde locale en contient une autre.
+    Object.keys(merged.currencies).forEach(code => {
+      if (DEFAULT_SETTINGS.currencies[code]) {
+        merged.currencies[code].decimals = DEFAULT_SETTINGS.currencies[code].decimals;
+      }
+    });
     return merged;
   } catch (e) {
     console.error('Paramètres illisibles, réinitialisation', e);
@@ -195,17 +202,16 @@ function computeTotals() {
     - (Number(state.paiement) || 0);
   const ecart = totalPhysique - soldeComptable;
   let ecartType = 'equilibre';
-  if (Math.abs(ecart) >= (cfg.decimals === 0 ? 1 : 0.01)) {
+  if (Math.abs(ecart) >= 1) {
     ecartType = ecart < 0 ? 'deficit' : 'excedent';
   }
   return { totalPhysique, soldeComptable, ecart, ecartType };
 }
 
-function fmt(value, cfg) {
-  const decimals = cfg ? cfg.decimals : 0;
+function fmt(value) {
   return Number(value || 0).toLocaleString('fr-FR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   });
 }
 
@@ -450,7 +456,7 @@ function renderHistoryTable() {
     const totalPhysique = Object.entries(r.counts || {}).reduce((sum, [denom, qty]) => sum + Number(denom) * (Number(qty) || 0), 0);
     const soldeComptable = computeStoredSoldeComptable(r);
     const ecart = totalPhysique - soldeComptable;
-    const ecartType = Math.abs(ecart) < (cfg.decimals === 0 ? 1 : 0.01) ? 'equilibre' : (ecart < 0 ? 'deficit' : 'excedent');
+    const ecartType = Math.abs(ecart) < 1 ? 'equilibre' : (ecart < 0 ? 'deficit' : 'excedent');
 
     const tr = document.createElement('tr');
     tr.className = 'row-' + ecartType;
