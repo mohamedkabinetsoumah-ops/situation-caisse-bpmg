@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Situation de Caisse</title>
+<meta name="description" content="Application de situation de caisse — comptage, solde et clôture journalière.">
+<meta name="theme-color" content="#E67900">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="assets/logo-bpmg.png" alt="Banque Populaire Maroco Guinéenne" class="brand-logo">
+    <div class="brand-text">
+      <div class="brand-title" id="brandAgence">Situation de Caisse</div>
+      <div class="brand-sub" id="brandInstitution">Chargement…</div>
+    </div>
+  </div>
+  <nav class="tabs" id="mainNav">
+    <button class="tab-btn active" data-view="saisie">Saisie du jour</button>
+    <button class="tab-btn" data-view="historique">Historique</button>
+    <button class="tab-btn" data-view="parametres">Paramètres</button>
+  </nav>
+  <button id="installBtn" class="btn btn-ghost" hidden>Installer l'app</button>
+</header>
+
+<main id="app">
+
+  <!-- ===================== VUE SAISIE ===================== -->
+  <section id="view-saisie" class="view active">
+
+    <div class="card entry-head">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="dateInput">
+      </div>
+      <div class="field">
+        <label>Devise</label>
+        <div class="currency-tabs" id="currencyTabs"></div>
+      </div>
+      <div class="field status-field">
+        <label>Statut</label>
+        <span id="statusBadge" class="badge badge-draft">Brouillon</span>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+
+      <div class="card">
+        <h2>Comptage physique <span class="muted" id="currencyLabel"></span></h2>
+        <table class="denom-table" id="denomTable">
+          <thead>
+            <tr><th>Coupure</th><th>Quantité</th><th>Montant</th></tr>
+          </thead>
+          <tbody id="denomBody"></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td>Total physique en caisse</td>
+              <td></td>
+              <td id="totalPhysiqueCell">0</td>
+            </tr>
+          </tfoot>
+        </table>
+        <p class="amount-words" id="amountWords"></p>
+      </div>
+
+      <div class="card">
+        <h2>Mouvements &amp; solde comptable</h2>
+        <div class="field-row">
+          <label>Solde précédent</label>
+          <input type="number" step="any" id="soldePrecedent">
+        </div>
+        <div class="field-row">
+          <label>Entrée (+)</label>
+          <input type="number" step="any" id="entree">
+        </div>
+        <div class="field-row">
+          <label>Versement après caisse (+)</label>
+          <input type="number" step="any" id="versement">
+        </div>
+        <div class="field-row">
+          <label>Sortie (-)</label>
+          <input type="number" step="any" id="sortie">
+        </div>
+        <div class="field-row">
+          <label>Paiement après caisse (-)</label>
+          <input type="number" step="any" id="paiement">
+        </div>
+        <div class="field-row solde-comptable-row">
+          <label>Solde comptable</label>
+          <strong id="soldeComptableCell">0</strong>
+        </div>
+
+        <div id="ecartBanner" class="ecart-banner ecart-equilibre">
+          <div class="ecart-label" id="ecartLabel">ÉQUILIBRE</div>
+          <div class="ecart-amount" id="ecartAmount">0</div>
+        </div>
+
+        <h2 class="signatures-title">Responsables</h2>
+        <div class="field-row">
+          <label>Le Caissier</label>
+          <input type="text" id="caissierInput" placeholder="Nom du/de la caissier(ère)">
+        </div>
+        <div class="field-row">
+          <label>Chef d'Agence</label>
+          <input type="text" id="chefAgenceInput" placeholder="Nom du chef d'agence">
+        </div>
+        <div class="field-row">
+          <label>Notes</label>
+          <textarea id="notesInput" rows="2" placeholder="Observations (optionnel)"></textarea>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="print-signatures">
+      <div class="sig-block">
+        <div class="sig-name" id="printCaissierName">&nbsp;</div>
+        <div class="sig-line"></div>
+        <div class="sig-role">Le/La Caissier(ère)</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-name" id="printChefName">&nbsp;</div>
+        <div class="sig-line"></div>
+        <div class="sig-role">Chef d'Agence</div>
+      </div>
+    </div>
+
+    <div class="actions-bar">
+      <button id="btnSaveDraft" class="btn btn-secondary">Enregistrer le brouillon</button>
+      <button id="btnCloturer" class="btn btn-primary">Clôturer la situation</button>
+      <button id="btnPrint" class="btn btn-ghost">Imprimer / PDF</button>
+    </div>
+
+  </section>
+
+  <!-- ===================== VUE HISTORIQUE ===================== -->
+  <section id="view-historique" class="view">
+    <div class="card">
+      <div class="hist-toolbar">
+        <h2>Historique des situations</h2>
+        <div class="hist-filters">
+          <select id="histCurrencyFilter">
+            <option value="">Toutes devises</option>
+          </select>
+          <input type="date" id="histFromDate">
+          <input type="date" id="histToDate">
+          <button id="histExportCsv" class="btn btn-ghost">Exporter CSV</button>
+        </div>
+      </div>
+      <table class="hist-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Devise</th><th>Total physique</th><th>Solde comptable</th><th>Écart</th><th>Statut</th><th>Caissier</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <p id="histEmpty" class="muted" hidden>Aucune situation enregistrée pour le moment.</p>
+    </div>
+  </section>
+
+  <!-- ===================== VUE PARAMETRES ===================== -->
+  <section id="view-parametres" class="view">
+    <div class="card">
+      <h2>Identité de l'agence</h2>
+      <div class="field-row">
+        <label>Nom de l'institution</label>
+        <input type="text" id="settingInstitution">
+      </div>
+      <div class="field-row">
+        <label>Nom de l'agence</label>
+        <input type="text" id="settingAgence">
+      </div>
+      <div class="field-row">
+        <label>Caissier par défaut</label>
+        <input type="text" id="settingCaissier">
+      </div>
+      <div class="field-row">
+        <label>Chef d'agence par défaut</label>
+        <input type="text" id="settingChefAgence">
+      </div>
+      <button id="btnSaveSettings" class="btn btn-primary">Enregistrer les paramètres</button>
+    </div>
+
+    <div class="card">
+      <h2>Coupures par devise</h2>
+      <p class="muted">Modifiez la liste des billets/pièces pris en compte pour chaque devise (une valeur par ligne, la plus grande en premier).</p>
+      <div class="denom-settings-grid" id="denomSettingsGrid"></div>
+      <button id="btnSaveDenoms" class="btn btn-primary">Enregistrer les coupures</button>
+    </div>
+
+    <div class="card">
+      <h2>Sauvegarde des données</h2>
+      <p class="muted">Toutes les données sont stockées uniquement sur cet appareil. Exportez régulièrement une sauvegarde.</p>
+      <div class="actions-bar">
+        <button id="btnExportBackup" class="btn btn-secondary">Exporter une sauvegarde (.json)</button>
+        <label class="btn btn-ghost file-btn">
+          Importer une sauvegarde
+          <input type="file" id="importBackupInput" accept="application/json" hidden>
+        </label>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
