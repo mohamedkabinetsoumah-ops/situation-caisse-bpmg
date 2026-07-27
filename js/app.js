@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_SETTINGS = {
-  institution: 'GRANDIR ENSEMBLE',
+  institution: 'Situation de caisse',
   agence: 'AGENCE CONSTANTIN',
   caissier: '',
   chefAgence: '',
