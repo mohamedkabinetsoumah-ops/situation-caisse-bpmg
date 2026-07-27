@@ -225,11 +225,12 @@ body{
 
 /* ---------- Signatures (impression uniquement) ---------- */
 .print-signatures{display:none;}
+.print-footer{display:none;}
 
 /* ---------- Print ---------- */
 @page{
   size: landscape;
-  margin: 8mm 10mm;
+  margin: 6mm 10mm;
 }
 
 @media print{
@@ -274,10 +275,15 @@ body{
 
   .print-signatures{
     display:flex; justify-content:space-between; gap:60px;
-    margin-top:36px; padding:0 20px;
+    margin-top:10px; padding:0 20px;
   }
   .sig-block{flex:1; text-align:center;}
   .sig-name{font-weight:600; font-size:.9rem; min-height:1.2em;}
-  .sig-line{border-bottom:1px solid #333; height:80px; margin:6px 0;}
+  .sig-line{border-bottom:1px solid #333; height:44px; margin:6px 0;}
   .sig-role{font-size:.8rem; color:#555; text-transform:uppercase; letter-spacing:.03em;}
+
+  .print-footer{
+    display:block; margin-top:4px; padding-top:3px; border-top:1px solid #ccc;
+    text-align:center; font-size:.68rem; color:#888; letter-spacing:.02em;
+  }
 }
