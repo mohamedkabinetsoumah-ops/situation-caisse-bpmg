@@ -86,6 +86,12 @@ function uid() {
   return 'sc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
 function todayISO() {
   const d = new Date();
   const tz = d.getTimezoneOffset() * 60000;
@@ -467,7 +473,7 @@ function renderHistoryTable() {
       <td>${fmt(soldeComptable, cfg)}</td>
       <td>${ecartType === 'equilibre' ? '—' : fmt(Math.abs(ecart), cfg) + ' (' + ecartType.toUpperCase() + ')'}</td>
       <td>${r.status === 'cloture' ? 'Clôturée' : 'Brouillon'}</td>
-      <td>${r.caissier || ''}</td>
+      <td>${escapeHtml(r.caissier)}</td>
       <td><button class="link-btn" data-open="${r.id}">Ouvrir</button></td>
     `;
     body.appendChild(tr);
