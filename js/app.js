@@ -39,25 +39,37 @@ const DEFAULT_SETTINGS = {
 
 const CURRENCY_ORDER = ['GNF', 'EUR', 'USD'];
 
+const ECART_LABELS = {
+  equilibre: 'ÉQUILIBRE',
+  deficit: 'DÉFICIT',
+  excedent: 'EXCÉDENT'
+};
+
 /* ---------------- Storage helpers ---------------- */
+
+/* Complete des parametres partiels avec les valeurs par defaut. Indispensable
+   pour toute source exterieure au code : ancienne version du stockage local,
+   ou fichier de sauvegarde importe, qui peuvent ne pas contenir `currencies`. */
+function normalizeSettings(parsed) {
+  const merged = structuredClone(DEFAULT_SETTINGS);
+  if (!parsed || typeof parsed !== 'object') return merged;
+  Object.assign(merged, parsed);
+  merged.currencies = Object.assign({}, DEFAULT_SETTINGS.currencies, parsed.currencies || {});
+  // le nombre de decimales n'est pas modifiable par l'utilisateur : on force
+  // toujours la valeur du code, meme si une ancienne sauvegarde en contient une autre.
+  Object.keys(merged.currencies).forEach(code => {
+    if (DEFAULT_SETTINGS.currencies[code]) {
+      merged.currencies[code].decimals = DEFAULT_SETTINGS.currencies[code].decimals;
+    }
+  });
+  return merged;
+}
 
 function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.settings);
     if (!raw) return structuredClone(DEFAULT_SETTINGS);
-    const parsed = JSON.parse(raw);
-    // merge shallowly with defaults so new fields introduced later still exist
-    const merged = structuredClone(DEFAULT_SETTINGS);
-    Object.assign(merged, parsed);
-    merged.currencies = Object.assign({}, DEFAULT_SETTINGS.currencies, parsed.currencies || {});
-    // le nombre de decimales n'est pas modifiable par l'utilisateur : on force
-    // toujours la valeur du code, meme si une ancienne sauvegarde locale en contient une autre.
-    Object.keys(merged.currencies).forEach(code => {
-      if (DEFAULT_SETTINGS.currencies[code]) {
-        merged.currencies[code].decimals = DEFAULT_SETTINGS.currencies[code].decimals;
-      }
-    });
-    return merged;
+    return normalizeSettings(JSON.parse(raw));
   } catch (e) {
     console.error('Paramètres illisibles, réinitialisation', e);
     return structuredClone(DEFAULT_SETTINGS);
@@ -136,6 +148,13 @@ function convertBelowThousand(n) {
   return out;
 }
 
+/* « vingt » et « cent » perdent leur -s devant « mille » (numéral invariable) :
+   « quatre-vingt mille », « deux cent mille ». Ils le gardent devant « million »
+   et « milliard », qui sont des noms : « quatre-vingts millions ». */
+function sansMarqueDuPluriel(mots) {
+  return mots.replace(/(vingt|cent)s$/, '$1');
+}
+
 function numberToFrenchWords(value) {
   let n = Math.round(Math.abs(value));
   if (n === 0) return 'zéro';
@@ -151,7 +170,7 @@ function numberToFrenchWords(value) {
       const count = Math.floor(n / scale.value);
       n = n % scale.value;
       if (scale.value === 1000) {
-        parts.push(count === 1 ? 'mille' : convertBelowThousand(count) + ' mille');
+        parts.push(count === 1 ? 'mille' : sansMarqueDuPluriel(convertBelowThousand(count)) + ' mille');
       } else {
         const countWords = convertBelowThousand(count);
         parts.push((count === 1 ? 'un ' : countWords + ' ') + (count === 1 ? scale.singular : scale.plural));
@@ -296,7 +315,7 @@ function renderComputed() {
   const amountEl = document.getElementById('ecartAmount');
   banner.classList.remove('ecart-equilibre', 'ecart-deficit', 'ecart-excedent');
   banner.classList.add('ecart-' + ecartType);
-  label.textContent = ecartType === 'equilibre' ? 'ÉQUILIBRE' : ecartType === 'deficit' ? 'DÉFICIT' : 'EXCÉDENT';
+  label.textContent = ECART_LABELS[ecartType];
   amountEl.textContent = ecartType === 'equilibre' ? fmt(0, cfg) : fmt(Math.abs(ecart), cfg) + ' ' + cfg.symbol;
 
   const badge = document.getElementById('statusBadge');
@@ -421,7 +440,7 @@ function cloturerSituation() {
   if (ecartType !== 'equilibre') {
     const cfg = currentCurrencyCfg();
     const proceed = confirm(
-      `Un écart de ${fmt(Math.abs(ecart), cfg)} ${cfg.symbol} (${ecartType.toUpperCase()}) a été détecté.\n` +
+      `Un écart de ${fmt(Math.abs(ecart), cfg)} ${cfg.symbol} (${ECART_LABELS[ecartType]}) a été détecté.\n` +
       `Voulez-vous tout de même clôturer la situation ?`
     );
     if (!proceed) return;
@@ -471,7 +490,7 @@ function renderHistoryTable() {
       <td>${r.currency}</td>
       <td>${fmt(totalPhysique, cfg)}</td>
       <td>${fmt(soldeComptable, cfg)}</td>
-      <td>${ecartType === 'equilibre' ? '—' : fmt(Math.abs(ecart), cfg) + ' (' + ecartType.toUpperCase() + ')'}</td>
+      <td>${ecartType === 'equilibre' ? '—' : fmt(Math.abs(ecart), cfg) + ' (' + ECART_LABELS[ecartType] + ')'}</td>
       <td>${r.status === 'cloture' ? 'Clôturée' : 'Brouillon'}</td>
       <td>${escapeHtml(r.caissier)}</td>
       <td><button class="link-btn" data-open="${r.id}">Ouvrir</button></td>
@@ -566,8 +585,8 @@ function importBackup(file) {
   reader.onload = () => {
     try {
       const payload = JSON.parse(reader.result);
-      if (payload.settings) { settings = payload.settings; saveSettings(settings); }
-      if (payload.history) { history = payload.history; saveHistory(history); }
+      if (payload.settings) { settings = normalizeSettings(payload.settings); saveSettings(settings); }
+      if (payload.history) { history = Array.isArray(payload.history) ? payload.history : []; saveHistory(history); }
       showToast('Sauvegarde importée.');
       renderSettingsForm();
       renderHistoryFilters();
