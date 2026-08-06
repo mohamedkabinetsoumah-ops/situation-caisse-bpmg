@@ -207,13 +207,6 @@ body{
 .about-dev{margin-top:6px;}
 .about-dev-name{font-weight:700; font-size:1.05rem; color:var(--brand-dark);}
 .about-dev-role{color:var(--muted); font-size:.88rem; margin-top:2px;}
-.about-contacts{list-style:none; padding:0; margin:16px 0 0; display:flex; flex-direction:column; gap:8px; align-items:center;}
-.about-contacts a{
-  color:var(--primary); text-decoration:none; font-weight:600; font-size:.92rem;
-  padding:8px 14px; border-radius:8px; background:var(--bg); border:1px solid var(--border);
-  display:inline-block; min-width:220px;
-}
-.about-contacts a:hover{border-color:var(--primary);}
 /* couleur explicite : `.about-card p` l'emporterait sinon sur la classe .muted */
 .about-card p.about-support{margin:16px auto 0; max-width:400px; font-size:.82rem; line-height:1.5; color:var(--muted);}
 .about-card p.about-version{margin-top:26px; font-size:.8rem; color:var(--muted);}
