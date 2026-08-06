@@ -1,4 +1,4 @@
-var CACHE_NAME = 'caisse-app-v6';
+var CACHE_NAME = 'caisse-app-v7';
 var ASSETS = [
   './',
   './index.html',

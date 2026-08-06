@@ -214,7 +214,9 @@ body{
   display:inline-block; min-width:220px;
 }
 .about-contacts a:hover{border-color:var(--primary);}
-.about-version{margin-top:26px; font-size:.8rem;}
+/* couleur explicite : `.about-card p` l'emporterait sinon sur la classe .muted */
+.about-card p.about-support{margin:16px auto 0; max-width:400px; font-size:.82rem; line-height:1.5; color:var(--muted);}
+.about-card p.about-version{margin-top:26px; font-size:.8rem; color:var(--muted);}
 
 /* ---------- Toast ---------- */
 .toast{
