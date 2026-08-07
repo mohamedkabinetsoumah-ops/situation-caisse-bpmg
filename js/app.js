@@ -583,18 +583,32 @@ function exportBackup() {
 function importBackup(file) {
   const reader = new FileReader();
   reader.onload = () => {
+    /* On distingue les deux causes possibles : un fichier qui n'est pas une
+       sauvegarde (message pour l'utilisateur) et une anomalie survenue pendant
+       la restauration (message distinct + detail en console pour le diagnostic). */
+    let payload;
     try {
-      const payload = JSON.parse(reader.result);
+      payload = JSON.parse(reader.result);
+    } catch (e) {
+      alert("Le fichier sélectionné n'est pas une sauvegarde valide : son contenu n'est pas lisible.");
+      return;
+    }
+    if (!payload || typeof payload !== 'object' || (!payload.settings && !payload.history)) {
+      alert("Le fichier sélectionné n'est pas une sauvegarde de cette application.");
+      return;
+    }
+    try {
       if (payload.settings) { settings = normalizeSettings(payload.settings); saveSettings(settings); }
       if (payload.history) { history = Array.isArray(payload.history) ? payload.history : []; saveHistory(history); }
-      showToast('Sauvegarde importée.');
       renderSettingsForm();
       renderHistoryFilters();
       renderHistoryTable();
       loadDraftForCurrentSelection();
       renderAll();
+      showToast('Sauvegarde importée.');
     } catch (e) {
-      alert("Le fichier sélectionné n'est pas une sauvegarde valide.");
+      console.error('Échec de la restauration', e);
+      alert("La sauvegarde a été lue, mais la restauration a échoué.\n\nDétail : " + (e && e.message ? e.message : e));
     }
   };
   reader.readAsText(file);
